@@ -41,6 +41,7 @@ COPY anyrun_search.py api.py .env.example ./
 ENV PYTHONUNBUFFERED=1
 ENV DISPLAY=:99
 ENV CHROME_BIN=/usr/bin/google-chrome
+ENV HEADLESS=1
 
 EXPOSE 8000
 

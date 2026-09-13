@@ -551,12 +551,16 @@ def main():
 
     hash_value = sys.argv[1]
 
+    # Auto-detect headless mode: use headless in Docker/CI or when no display
+    headless = os.environ.get("HEADLESS", "").lower() in ("1", "true", "yes") or not os.environ.get("DISPLAY")
+
     print("=" * 70)
     print("ANY.RUN SEARCH SUBMISSION LOOKUP")
     print("=" * 70)
     print(f"[*] Hash: {hash_value}")
+    print(f"[*] Headless mode: {headless}")
 
-    driver = get_driver(headless=False)
+    driver = get_driver(headless=headless)
     wait = WebDriverWait(driver, 60)
 
     try:
