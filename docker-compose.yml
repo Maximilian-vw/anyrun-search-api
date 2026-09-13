@@ -8,6 +8,8 @@ services:
       - "8000:8000"
     env_file:
       - .env
+    volumes:
+      - ./.env:/app/.env
     restart: unless-stopped
     shm_size: 2gb
     deploy:

@@ -107,7 +107,36 @@ def get_driver(headless=False):
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
     options.add_experimental_option("useAutomationExtension", False)
 
-    service = Service(ChromeDriverManager().install())
+    # Find correct chromedriver binary (webdriver-manager sometimes returns wrong file)
+    driver_path = ChromeDriverManager().install()
+    if "THIRD_PARTY_NOTICES" in driver_path:
+        # Find the actual chromedriver binary - go up to find the chromedriver-linux64 folder
+        import glob
+        base_dir = os.path.dirname(os.path.dirname(driver_path))
+        candidates = glob.glob(os.path.join(base_dir, "**/chromedriver"), recursive=True)
+        for c in candidates:
+            if os.path.isfile(c) and "THIRD_PARTY" not in c:
+                try:
+                    os.chmod(c, 0o755)
+                except Exception:
+                    pass
+                if os.access(c, os.X_OK):
+                    driver_path = c
+                    break
+    elif not os.path.isfile(driver_path) or not os.access(driver_path, os.X_OK):
+        # Fallback: search for any chromedriver
+        import glob
+        candidates = glob.glob("/root/.wdm/drivers/**/chromedriver", recursive=True)
+        for c in candidates:
+            if os.path.isfile(c) and "THIRD_PARTY" not in c:
+                try:
+                    os.chmod(c, 0o755)
+                except Exception:
+                    pass
+                if os.access(c, os.X_OK):
+                    driver_path = c
+                    break
+    service = Service(driver_path)
     driver = webdriver.Chrome(service=service, options=options)
     driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
         "source": "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
