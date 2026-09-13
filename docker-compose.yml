@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  anyrun-api:
+    build: .
+    container_name: anyrun-search-api
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    restart: unless-stopped
+    shm_size: 2gb
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
