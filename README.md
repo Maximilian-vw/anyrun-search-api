@@ -18,7 +18,7 @@ Self-hosted API for searching ANY.RUN public malware submissions via secure web 
 ### 1. Clone & Configure
 
 ```bash
-https://github.com/Maximilian-vw/anyrun-search-api.git
+git clone https://github.com/Maximilian-vw/anyrun-search-api.git
 cd anyrun-search-api
 cp .env.example .env
 nano .env
