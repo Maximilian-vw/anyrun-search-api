@@ -39,8 +39,8 @@ docker compose up -d --build
 
 **Get your unique API_KEY from logs:**
 ```bash
-docker compose logs anyrun-api | grep "Generated new API_KEY"
-# [+] Generated new API_KEY: K7x9mN2pQ4vL8wE5rT6yU1iO3pA6sD9fG2hJ5kL8mN1
+sudo -S docker exec anyrun-search-api env | grep API_KEY
+# API_KEY: K7x9mN2pQ4vL8wE5rT6yU1iO3pA6sD9fG2hJ5kL8mN1
 ```
 
 ### 3. Test & Use
