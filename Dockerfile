@@ -28,6 +28,15 @@ RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | gpg --dearm
     && apt-get update && apt-get install -y google-chrome-stable \
     && rm -rf /var/lib/apt/lists/*
 
+# Create X11 directory for Xvfb (needs root)
+RUN mkdir -p /tmp/.X11-unix && chmod 1777 /tmp/.X11-unix
+
+# Create non-root user with proper home directory
+RUN useradd -m -u 1000 -s /bin/bash appuser \
+    && mkdir -p /home/appuser/.wdm/drivers \
+    && chown -R appuser:appuser /home/appuser \
+    && chmod 755 /home/appuser
+
 WORKDIR /app
 
 # Install Python dependencies
@@ -35,13 +44,22 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application files
-COPY anyrun_search.py api.py .env.example ./
+COPY --chown=appuser:appuser anyrun_search.py api.py .env.example ./
+
+# Create .env file with correct permissions
+RUN touch .env && chown appuser:appuser .env
+
+# Switch to non-root user
+USER appuser
 
 # Environment
 ENV PYTHONUNBUFFERED=1
 ENV DISPLAY=:99
 ENV CHROME_BIN=/usr/bin/google-chrome
 ENV HEADLESS=1
+ENV HOME=/home/appuser
+ENV WDM_LOG_LEVEL=0
+ENV WDM_CACHE_DIR=/home/appuser/.wdm
 
 EXPOSE 8000
 

@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   anyrun-api:
     build: .
@@ -10,11 +8,29 @@ services:
       - .env
     volumes:
       - ./.env:/app/.env
+      - wdm_cache:/home/appuser/.wdm
     restart: unless-stopped
     shm_size: 2gb
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - SYS_ADMIN
+    tmpfs:
+      - /tmp
+      - /var/tmp
     deploy:
       resources:
         limits:
           memory: 2G
         reservations:
           memory: 1G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  wdm_cache:
