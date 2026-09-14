@@ -13,7 +13,7 @@ import logging
 import time
 from pathlib import Path
 from typing import Optional
-from dotenv import load_dotenv, set_key
+from dotenv import load_dotenv
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
@@ -27,13 +27,14 @@ load_dotenv(ENV_FILE)
 API_KEY = os.environ.get("API_KEY")
 if not API_KEY:
     API_KEY = secrets.token_urlsafe(32)
-    set_key(str(ENV_FILE), "API_KEY", API_KEY)
     print(f"[+] Generated new API_KEY: {API_KEY}")
+    print("[*] Save this key - required for all API requests")
 
 ANYRUN_EMAIL = os.environ.get("ANYRUN_EMAIL")
 ANYRUN_PASSWORD = os.environ.get("ANYRUN_PASSWORD")
 if not ANYRUN_EMAIL or not ANYRUN_PASSWORD:
     print("[-] Missing ANYRUN_EMAIL or ANYRUN_PASSWORD in .env")
+    print("[*] Edit .env and add your ANY.RUN credentials")
     sys.exit(1)
 
 logging.basicConfig(
