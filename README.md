@@ -1,15 +1,72 @@
 # ANY.RUN Search API
 
-Self-hosted API for searching ANY.RUN public malware submissions via secure web scraping. Designed for threat intelligence workflows and n8n automation.
+Self-hosted REST API for searching ANY.RUN public malware submissions via secure web scraping. Designed for threat intelligence workflows and n8n automation.
 
 ## Features
 
 - 🔍 **Hash Search** - SHA256, SHA1, MD5 lookup in ANY.RUN public submissions
-- 🔐 **Auto-Generated API Keys** - Unique per installation, no shared secrets
+- 🔐 **API Key Authentication** - Secure header-based auth (`X-API-Key`)
 - 🐳 **Docker Ready** - Single container with headless Chrome + Xvfb
-- 🌐 **n8n Compatible** - REST API for workflow automation
+- 🌐 **n8n Compatible** - REST API v1 for workflow automation
 - 🛡️ **Secure by Default** - Credentials in `.env`, auto gitignored
 - 🖥️ **Headless Server Deploy** - No GUI required
+
+---
+
+## API Endpoints (v1)
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/v1/health` | GET | Health check |
+| `/api/v1/search` | POST | Search by hash (MD5/SHA1/SHA256) |
+
+### Request Format
+
+```bash
+POST /api/v1/search
+Content-Type: application/json
+X-API-Key: YOUR_API_KEY
+
+{
+  "hash": "A35AC53B052B669ADD060BE266BBFB98DD72F53212A2B4E817D692EA2AB7B934"
+}
+```
+
+### Success Response
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "os": "Windows 10 Professional 64 bit",
+      "time": "Sep 11, 2026, 10:58",
+      "verdict": "No threats detected",
+      "object": "https://mebelinterierdacha.icu:443",
+      "type": "Open in browser",
+      "tags": [],
+      "md5": "e1fac7ae43df1b59fb704aaf5fd54f19",
+      "sha1": "393e6028931d03ac0a763d48fc464c4eb7cbde50",
+      "sha256": "a35ac53b052b669add060be266bbfb98dd72f53212a2b4e817d692ea2ab7b934",
+      "task_uuid": "found_via_search",
+      "report_url": "https://app.any.run/submissions/"
+    }
+  ],
+  "error": null
+}
+```
+
+### Error Response
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "Description"
+  }
+}
+```
 
 ---
 
@@ -40,19 +97,18 @@ docker compose up -d --build
 **Get your unique API_KEY from logs:**
 ```bash
 docker compose logs anyrun-api | grep "Generated new API_KEY"
-# anyrun-search-api  | [+] Generated new API_KEY: Npa5Whbl_5eAOWiQx3kzkycvVEVXKRy0iXWzIg4SS24
-
+# [+] Generated new API_KEY: Npa5Whbl_5eAOWiQx3kzkycvVEVXKRy0iXWzIg4SS24
 ```
 
 ### 3. Test & Use
 
 ```bash
 # Health check
-curl http://localhost:8000/health
-# {"status":"ok"}
+curl http://localhost:8000/api/v1/health
+# {"status":"ok","version":"1.0.0"}
 
 # Search (replace YOUR_KEY)
-curl -X POST http://localhost:8000/search \
+curl -X POST http://localhost:8000/api/v1/search \
   -H "X-API-Key: YOUR_KEY" \
   -H "Content-Type: application/json" \
   -d '{"hash": "A35AC53B052B669ADD060BE266BBFB98DD72F53212A2B4E817D692EA2AB7B934"}'
@@ -66,7 +122,7 @@ curl -X POST http://localhost:8000/search \
 
 | Setting | Value |
 |---------|-------|
-| **URL** | `http://YOUR_SERVER_IP:8000/search` |
+| **URL** | `http://YOUR_SERVER_IP:8080/api/v1/search` |
 | **Method** | POST |
 | **Headers** | `X-API-Key: YOUR_GENERATED_KEY` |
 | **Body (JSON)** | `{"hash": "{{ $json.hash }}"} |`
@@ -89,7 +145,7 @@ curl -X POST http://localhost:8000/search \
 ```
 
 1. **API starts** → reads `.env` → generates unique `API_KEY` if missing
-2. **Client calls** `/search` with hash + `X-API-Key` header
+2. **Client calls** `/api/v1/search` with hash + `X-API-Key` header
 3. **Server** launches headless Chrome → logs into ANY.RUN → searches hash
 4. **Returns** JSON with verdict, object, tags, hashes
 
@@ -102,8 +158,12 @@ curl -X POST http://localhost:8000/search \
 | **API Key** | Auto-generated 256-bit token per install (`secrets.token_urlsafe(32)`) |
 | **ANY.RUN Creds** | Your personal credentials in `.env` only |
 | **No Defaults** | No hardcoded secrets anywhere |
-| **Container Isolation** | Docker with memory limits |
+| **Container Isolation** | Docker with memory/CPU limits |
 | **Git Safe** | `.env` in `.gitignore` |
+| **Hash Validation** | Only 32-64 hex chars accepted (MD5/SHA1/SHA256) |
+| **Rate Limiting** | 10 req/min per IP |
+| **Payload Limit** | 1KB max request size |
+| **Security Headers** | X-Content-Type-Options, X-Frame-Options, etc. |
 
 ---
 

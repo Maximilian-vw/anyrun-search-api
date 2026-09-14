@@ -1,0 +1,47 @@
+# Git
+.git
+.gitignore
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+logs/
+
+# Screenshots
+/tmp/debug_*.png
+/tmp/debug_*.html
+/tmp/login_error.png
+/tmp/search_error.png
+/tmp/scrape_error.png
+
+# Docker
+.docker/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test files
+test_*.py
+
+# Documentation
+README.md
+DEPLOY.md
